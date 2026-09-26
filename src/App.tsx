@@ -1945,18 +1945,14 @@ const AboutModal: React.FC<AboutModalProps> = ({
   onOpenCV,
   onOpenContact
 }) => {
-  const [imgSrc, setImgSrc] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('atharv_profile_photo');
-      if (saved) return saved;
-    }
-    return PROFILE_IMAGE_URL;
-  });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [imgSrc, setImgSrc] = useState<string>(PROFILE_IMAGE_URL);
   const [imgError, setImgError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [customUrlInput, setCustomUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [customUrlInput, setCustomUrlInput] = useState('');
+
+ 
 
   if (!isOpen) return null;
 
@@ -2039,114 +2035,25 @@ const AboutModal: React.FC<AboutModalProps> = ({
           <div className="overflow-y-auto pr-2 space-y-6 text-left">
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start liquid-glass rounded-3xl p-6 md:p-8 border border-white/10">
               <div className="flex flex-col items-center shrink-0">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileInputChange}
-                  className="hidden"
-                />
+                <div className="relative">
+  <div className="w-44 h-56 md:w-52 md:h-68 rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-neutral-950">
+    {!imgError ? (
+      <img
+        src={PROFILE_IMAGE_URL}
+        alt={CANDIDATE_NAME}
+        onError={() => setImgError(true)}
+        className="w-full h-full object-cover object-top"
+      />
+    ) : (
+      <div className="w-full h-full flex items-center justify-center text-white font-instrument text-xl">
+        AA
+      </div>
+    )}
+  </div>
+</div>
+                
 
-                <div
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={handleDrop}
-                  className={`w-44 h-56 md:w-52 md:h-68 rounded-2xl overflow-hidden border shadow-2xl bg-neutral-950 relative group flex items-center justify-center transition-all ${
-                    isDragging ? 'border-white ring-2 ring-white/50 scale-102' : 'border-white/20'
-                  }`}
-                >
-                  {!imgError ? (
-                    <>
-                      <img
-                        src={imgSrc}
-                        alt={CANDIDATE_NAME}
-                        onError={() => setImgError(true)}
-                        className="w-full h-full object-cover object-top"
-                      />
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-3 text-center cursor-pointer backdrop-blur-[2px]"
-                      >
-                        <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                          </svg>
-                        </div>
-                        <span className="text-white text-xs font-medium font-sans-clean">Change Photo</span>
-                        <span className="text-white/50 text-[10px] font-mono">Click or drop file</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-neutral-900 to-black text-white/80">
-                      <div className="w-14 h-14 rounded-full liquid-glass border border-white/20 flex items-center justify-center text-xl font-instrument mb-2 text-white">
-                        AA
-                      </div>
-                      <span className="text-xs font-semibold text-white mb-0.5">{CANDIDATE_NAME}</span>
-                      <span className="text-[10px] font-mono text-white/40 mb-3">Portrait Photo</span>
-
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="bg-white text-black font-semibold text-[11px] rounded-full px-3.5 py-1.5 hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg mb-2"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                        </svg>
-                        <span>Choose Photo</span>
-                      </button>
-
-                      <p className="text-[9px] font-mono text-white/40 leading-tight">
-                        Select portrait file or drag &amp; drop
-                      </p>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowUrlInput(!showUrlInput)}
-                        className="mt-2 text-[9px] font-mono text-white/50 hover:text-white underline cursor-pointer"
-                      >
-                        or paste image URL
-                      </button>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => setShowUrlInput(!showUrlInput)}
-                    title="Change Photo Link"
-                    className="absolute bottom-2 right-2 liquid-glass rounded-full p-1.5 text-white/60 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {showUrlInput && (
-                  <form onSubmit={handleUpdateImageUrl} className="mt-2.5 w-44 md:w-52 space-y-1.5 animate-fade-in">
-                    <input
-                      type="url"
-                      placeholder="Paste image link..."
-                      value={customUrlInput}
-                      onChange={(e) => setCustomUrlInput(e.target.value)}
-                      className="w-full text-[11px] liquid-glass rounded-lg px-2.5 py-1.5 text-white placeholder:text-white/30 outline-none border border-white/20"
-                    />
-                    <div className="flex gap-1">
-                      <button
-                        type="submit"
-                        className="flex-1 bg-white text-black text-[10px] py-1 rounded font-medium cursor-pointer"
-                      >
-                        Load
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowUrlInput(false)}
-                        className="px-2 bg-white/10 text-white text-[10px] py-1 rounded cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                )}
+                  
 
                 <div className="flex items-center gap-1 mt-2 text-[10px] font-mono text-white/40">
                   <MapPin className="w-3 h-3 text-emerald-400" />
